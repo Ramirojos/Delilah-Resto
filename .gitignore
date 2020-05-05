@@ -1,0 +1,8 @@
+#Ignora Nodes modules folder
+node_modules
+
+#ignora los json
+*.json
+
+#ignorar todos los .txt
+*.txt
