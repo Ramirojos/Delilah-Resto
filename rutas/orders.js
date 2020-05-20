@@ -2,7 +2,7 @@ const server = require('express');
 
 const router=server.Router();
 
-let pedidos=[
+let orders=[
     {
         id:1,
         estado:'nuevo',
@@ -18,8 +18,7 @@ let pedidos=[
 ];
 
 router.get('/', (req,res)=>{
-    pedidos.push(req.body);
-    res.status(200).json(pedidos);
+    res.status(200).json(orders);
 });
 
 function validateOrder(req,res,next){
@@ -32,12 +31,13 @@ function validateOrder(req,res,next){
 }
 
 router.post('/',validateOrder,(req,res)=>{
-    res.status(200).json('Tu orden esta siendo procesada');
+    orders.push(req.body);
+    res.status(201).json('Orden creada');
 })
 
 function validateOrderId(req,res,next){
-    pedidos.forEach((pedido)=>{
-        if(pedido.id == req.params.id){
+    orders.forEach((order)=>{
+        if(order.id == req.params.id){
             next();
         }else{
             res.status(404).json('la orden no existe');
@@ -47,7 +47,7 @@ function validateOrderId(req,res,next){
 
 router.get('/:id',validateOrderId,(req,res)=>{
     const orderId = req.params.id
-    res.status(200).json(pedidos[orderId-1]);
+    res.status(200).json(orders[orderId-1]);
 })
 
 
