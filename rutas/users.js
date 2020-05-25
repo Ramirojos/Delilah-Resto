@@ -1,8 +1,10 @@
 const server = require('express');
 const jsw = require('jsonwebtoken');
 const router=server.Router();
+const db=require('../config/database');
 const secret ='ulraSecret123';
-let users = [
+const User = require('../models/user')
+/*let users = [
     {
         id:1,
         displayName:"Cosme_Fulanito",
@@ -21,10 +23,17 @@ let users = [
         contactPhone:12525545325,
         contactAdress:"calle falsa 123"
     }
-]
+]*/
 router.get('/', (req,res)=>{
-res.status(200).json(users);
+
+User.findAll()
+    .then(users=>{
+        console.log(users);
+        res.sendStatus(200);
+    })
+    .catch(err=>console.log(err))
 })
+
 function validateUserId(req, res, next){
     users.forEach((user)=>{
         if(user.id == req.params.id){
@@ -34,10 +43,12 @@ function validateUserId(req, res, next){
         }
     })
 }
+
 router.get('/:id',validateUserId, (req,res)=>{
     let userId = req.params.id
     res.status(200).json(users[userId-1]);
 })
+
 function validateNewUser(req,res,next){
     const {id,displayName,password,fullName,email,contactPhone,contactAdress}=req.body;
     if(!id||!displayName||!password||!fullName||!email||!contactPhone||!contactAdress){
@@ -46,6 +57,7 @@ function validateNewUser(req,res,next){
         next();
     }
 }
+
 function checkForUser(req, res, next){
     let existe = false;
     users.forEach((user)=>{
@@ -58,11 +70,13 @@ function checkForUser(req, res, next){
         next();
     }    
 }
+
 router.post('/', [validateNewUser,checkForUser], (req,res)=>{
     //ahora es un push para el arreglo hardcodeado, despues con sequelize
     users.push(req.body);
     res.status(201).json('Usuario creado con Exito');
 })
+
 function validateUser ( displayName, password){
     const [filterUser]=users.filter(row=>row.displayName==displayName && row.password==password);
     if(!filterUser){
@@ -70,6 +84,7 @@ function validateUser ( displayName, password){
     }
     return filterUser;
 }
+
 router.post('/:id/login', (req,res)=>{
     const{displayName, password}=req.body;
     const validated = validateUser(displayName,password);
@@ -83,4 +98,5 @@ router.post('/:id/login', (req,res)=>{
     let succes=`Bienvenido ${displayName}`;
     res.json({succes,token})
 })
+
 module.exports=router;
