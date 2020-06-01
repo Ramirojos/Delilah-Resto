@@ -5,7 +5,7 @@ const db=require('../config/database');
 const secret ='ulraSecret123';
 const User = require('../models/user');
 
-let users = [
+/*let users = [
     {
         id:1,
         displayName:"Cosme_Fulanito",
@@ -24,7 +24,7 @@ let users = [
         contactPhone:12525545325,
         contactAdress:"calle falsa 123"
     }
-]
+]*/
 
 //https://sequelize.org/master/manual/raw-queries.html
 
@@ -35,6 +35,7 @@ router.get('/', (req,res)=>{
         {type: db.QueryTypes.SELECT}
         ).then((resultados)=>{
             console.log(resultados)
+            res.status(200).json(resultados);
         })
         .catch(err=>console.log(err));
 
@@ -48,22 +49,29 @@ router.get('/', (req,res)=>{
 
 // Validacion  de ID usuario 
 function validateUserId(req, res, next){
+    console.log(req.params.id);
+    console.log(users);
     users.forEach((user)=>{
+        const bool=false;
         if(user.id == req.params.id){
-            next();
+            bool=true
         }else{
             res.status(404).json('El ususario con id :'+req.params.id+' no existe.');
         }
     })
+    next();
 }
 
+
+
+
 //Trae un usuario por ID
-router.get('/:id',validateUserId, (req,res)=>{
-    db.query('SELECT * FROM users WHERE id = ?', {
-        replacements:[req.params.id], type: db.QueryTypes.SELECT})
-        .then(user=>{
+router.get('/:id', async (req,res)=>{
+    const user = await db.query('SELECT * FROM users WHERE id = ?', 
+    {replacements:[req.params.id], type: db.QueryTypes.SELECT})
+        .then((user)=>{
             console.log(user);
-            res.status(200);
+            res.status(200).json(user);
 
         //si pongo res.status(200).json(user),
         //error cannot set headers after they are sent to the client 
