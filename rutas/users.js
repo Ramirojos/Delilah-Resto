@@ -1,151 +1,136 @@
 const server = require('express');
 const jsw = require('jsonwebtoken');
-const router=server.Router();
-const db=require('../config/database');
+const router = server.Router();
+const db = require('../config/database');
 const secret ='ulraSecret123';
 const User = require('../models/user');
-
-/*let users = [
-    {
-        id:1,
-        displayName:"Cosme_Fulanito",
-        password:"asd123",
-        fullName:" Cosme Fulanito",
-        email:"cosme@fulanito.com",
-        contactPhone:12525545325,
-        contactAdress:"calle falsa 123"
-    },
-    {
-        id:2,
-        displayName:"ConanElBarbaro",
-        password:"miracomotemiraconan",
-        fullName:" Conan",
-        email:"conan@barbaro.com",
-        contactPhone:12525545325,
-        contactAdress:"calle falsa 123"
-    }
-]*/
-
-//https://sequelize.org/master/manual/raw-queries.html
+const faker =require('faker');
 
 
-//Trae todos los usuarios
-router.get('/', (req,res)=>{
-    db.query('SELECT * FROM users',
+
+//-----GETs----
+//Trae todos los usuarios, esto tiene que ser solo si sos admin.
+//por ahiora trae todos
+router.get('/', async(req,res)=>{
+    await db.query('SELECT * FROM users',
         {type: db.QueryTypes.SELECT}
         ).then((resultados)=>{
             console.log(resultados)
             res.status(200).json(resultados);
         })
         .catch(err=>console.log(err));
-
-    /*User.findAll()
-    .then(users=>{
-        console.log(users);
-        res.sendStatus(200);
-    })
-    .catch(err=>console.log(err))*/
 })
-
-// Validacion  de ID usuario 
-function validateUserId(req, res, next){
-    console.log(req.params.id);
-    console.log(users);
-    users.forEach((user)=>{
-        const bool=false;
-        if(user.id == req.params.id){
-            bool=true
-        }else{
-            res.status(404).json('El ususario con id :'+req.params.id+' no existe.');
-        }
-    })
-    next();
-}
-
-
-
 
 //Trae un usuario por ID
 router.get('/:id', async (req,res)=>{
-    const user = await db.query('SELECT * FROM users WHERE id = ?', 
+     await db.query('SELECT * FROM users WHERE id = ?', 
     {replacements:[req.params.id], type: db.QueryTypes.SELECT})
         .then((user)=>{
-            console.log(user);
-            res.status(200).json(user);
-
-        //si pongo res.status(200).json(user),
-        //error cannot set headers after they are sent to the client 
-        //linea 66
-        
+            if(user.length>0){
+                console.log(user);
+                res.status(200).json(user);
+            }else{
+                res.status(404).json('El ususario con id :'+req.params.id+' no existe.');
+            }
         })
         .catch(err=>console.log(err));
-    })
-    //let userId = req.params.id
-    
-
-
-//Valida que todos los campos esten completos para la creacion de usuario
-
-function validateNewUser(req,res,next){
-    const {id,displayName,password,fullName,email,contactPhone,contactAdress}=req.body;
-    if(!id||!displayName||!password||!fullName||!email||!contactPhone||!contactAdress){
-        res.status(400).json('Bad request, missing information')
-    }else{
-        next();
-    }
-}
-
-
-//Chequea si el DisplayName existe en la creacion de user nuevo
-function checkForUser(req, res, next){
-    let existe = false;
-    users.forEach((user)=>{
-        if(req.body.id==user.id || req.body.displayName==user.displayName){
-            existe=true;
-        }})
-    if(existe==true){
-        res.status(409).json('Conflict, el usuario ya existe')
-    }else{
-        next();
-    }    
-}
-
+    })   
+//-----POSTs-----
 
 //crea usuario nuevo y agrea a la tabla de usuarios
-router.post('/', [validateNewUser,checkForUser], (req,res)=>{
-    //ahora es un push para el arreglo hardcodeado, despues con sequelize
-    //users.push(req.body);
-
-
-    res.status(201).json('Usuario creado con Exito');
+router.post('/',async (req,res)=>{
+    const user={
+    id:'NULL',
+    userName:req.body.userName,
+    password:req.body.password,
+    fullName:req.body.fullName,
+    email:req.body.email,
+    contactPhone:req.body.contactPhone,
+    contactAddress:req.body.contactAddress
+    }
+    let sql =`INSERT INTO users VALUES (:id,:userName,:password,:fullName,:email,
+        :contactPhone,:contactAddress)`;
+    await db.query(sql,{
+        replacements: user
+    }).then((newUser)=>{
+        console.log(newUser);
+        res.status(201).json('Usuario creado con Exito')
+    })
+    .catch((err)=>console.log(err))
 })
 
+//post request para loguear al usuario con sus credenciales (si en orden)
+//con express, todavia o implementado con Sequelize.
+router.post('/:id/login', (req,res)=>{
+    const{userName, password}=req.body;
+    const validated = validateUser(userName,password);
+    if(!validated){
+        res.json({error:'Invalid Username or password'});
+        return;
+    }
+    const token=jsw.sign({
+        userName,
+    },secret);
+    let succes=`Bienvenido ${userName}`;
+    res.json({succes,token})
+})
 
-//add a user
+//------PATCH-------
 
 
-//Chequea qu eel usuari y la contraseña sean correctas cuando quiere lohearse el usuario
-function validateUser ( displayName, password){
-    const [filterUser]=users.filter(row=>row.displayName==displayName && row.password==password);
+//permite moificar passwword/email/phone/adress
+//implementar login
+router.patch('/:id', async (req,res)=>{
+    const userId=[req.params.id]
+    const sql=`UPDATE users SET password="${req.body.password}",email="${req.body.email}",
+    contactPhone="${req.body.contactPhone}",contactAddress="${req.body.contactAddress}" WHERE id=?`;
+    await db.query(sql,{
+        replacements:userId
+    }).then((updatedUser)=>{
+        console.log(updatedUser);
+        res.status(201).json(`Usuario con id:${userId} actualizado con Exito`)
+    }).catch((err)=>{
+        console.log(err);
+        res.status(400).json(`ERROR: ${err}`)
+    })
+    
+})
+
+//-----DELETE-------
+
+router.delete('/:id', async(req,res)=>{
+const sql= `DELETE FROM users WHERE id=?`;
+db.query(sql,{
+    replacements:[req.params.id]
+}).then((deletedUser)=>{
+    console.log(deletedUser);
+    res.status(200).json(`El usuario con ID: ${req.params.id}, fue eliminado exitosamente.`)
+}).catch((err)=>{
+    console.log(err);
+    res.status(400).json(`ERROR: ${err}`)
+})
+})
+
+//-------MIDDLEWARES-------
+
+//Chequea que el usuario y la contraseña sean correctas cuando quiere lohearse el usuario
+//con express
+function validateUser ( userName, password){
+    const [filterUser]=users.filter(row=>row.userName==userName && row.password==password);
     if(!filterUser){
         return false;
     }
     return filterUser;
 }
 
-//post request para loguear a la usuario con sus credenciales (si en orden)
-router.post('/:id/login', (req,res)=>{
-    const{displayName, password}=req.body;
-    const validated = validateUser(displayName,password);
-    if(!validated){
-        res.json({error:'Invalid Username or password'});
-        return;
-    }
-    const token=jsw.sign({
-        displayName,
-    },secret);
-    let succes=`Bienvenido ${displayName}`;
-    res.json({succes,token})
-})
-
 module.exports=router;
+
+//Crea usarios con faker usar despues
+/*const newUser={
+    userName:faker.internet.userName(),
+    password:faker.internet.password(),
+    fullName:faker.name.findName(),
+    email:faker.internet.email(),
+    contactPhone:faker.phone.phoneNumber(),
+    contactAddress:faker.address.streetAddress()
+}*/

@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 const db = require('../config/database');
 
-const User = db.define('user',{
+const Order = db.define('order',{
     id:{
         primaryKey: true,
         type:Sequelize.INTEGER.UNSIGNED.ZEROFILL,
@@ -10,23 +10,27 @@ const User = db.define('user',{
     userName:{
         type:Sequelize.STRING
     },
-    password:{
-        type:Sequelize.STRING
+    orderDescription:{
+        type:Sequelize.TEXT
     },
-    fullName:{
-        type:Sequelize.STRING
-    },
-    email:{
-        type:Sequelize.STRING
-    },
-    contactPhone:{
-        type:Sequelize.INTEGER
+    orderTime:{
+        type:Sequelize.DATE
     },
     contactAddress:{
         type:Sequelize.STRING
-    }},
+    },
+    paymentMethod:{
+        type:Sequelize.STRING
+    },
+    totalAmount:{
+        type:Sequelize.INTEGER
+    },
+    status:{
+        type:Sequelize.STRING
+    }
+},
     {timestamps: true}
     
 )
 
-module.exports=User;
+module.exports=Order;
