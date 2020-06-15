@@ -1,8 +1,8 @@
 
-const bodyParser= require ('body-parser')
+const bodyParser= require ('body-parser');
 const express = require('express');
 const server = express();
-const jwt=require('jsonwebtoken');
+
 
 
 server.use(bodyParser.json());
@@ -11,12 +11,28 @@ const products = require('./rutas/products');
 const orders = require('./rutas/orders');
 const users = require('./rutas/users');
 
+//Database
+
+const db =require('./config/database');
+
+//Routes
+
 server.use('/products', products);
 server.use('/orders', orders);
-server.use('/users', users)
+server.use('/users', users);
 
-server.listen(3000,()=>{
-    console.log('server initialized');
+
+
+//test DB
+
+db.authenticate()
+    .then(()=>console.log('Database connected...'))
+    .catch(err =>console.log('Error:'+err))
+
+const PORT = process.env.PORT || 3000;
+
+server.listen(PORT,()=>{
+    console.log(`Server started on port ${PORT}`);
 })
 
 server.use((err,req,res,next)=>{
