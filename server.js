@@ -2,15 +2,18 @@
 const bodyParser= require ('body-parser')
 const express = require('express');
 const server = express();
+const jwt=require('jsonwebtoken');
 
 
 server.use(bodyParser.json());
 
-const productos = require('./rutas/products');
-const pedidos = require('./rutas/orders');
+const products = require('./rutas/products');
+const orders = require('./rutas/orders');
+const users = require('./rutas/users');
 
-server.use('/productos', productos);
-server.use('/pedidos', pedidos);
+server.use('/products', products);
+server.use('/orders', orders);
+server.use('/users', users)
 
 server.listen(3000,()=>{
     console.log('server initialized');
