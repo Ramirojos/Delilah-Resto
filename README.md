@@ -567,7 +567,7 @@ Bear in mind that ONLY an Administrator can see the order list.
  
  ## Author
 
-* Ramiro José Marugo(https://github.com/Ramirojos)
+* [Ramiro José Marugo](https://github.com/Ramirojos)
 
 
 
