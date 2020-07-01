@@ -565,7 +565,7 @@ Bear in mind that ONLY an Administrator can see the order list.
  * [mysql2](https://www.npmjs.com/package/mysql2) - MySQL client for Node.js
  * [sequelize](https://www.npmjs.com/package/sequelize) - Multi dialect ORM for Node.JS
  
- ##Author
+ ## Author
 
 * Ramiro José Marugo(https://github.com/Ramirojos)
 
