@@ -1,0 +1,24 @@
+{
+  "name": "delilah-resto",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "createdb": "node config/setup/install.js",
+    "populatedb": "node config/setup/populateDb.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "csv-parser": "^2.3.3",
+    "express": "^4.17.1",
+    "file-system": "^2.2.2",
+    "jsonwebtoken": "^8.5.1",
+    "moment": "^2.27.0",
+    "mysql2": "^2.1.0",
+    "sequelize": "^5.21.13"
+  }
+}
