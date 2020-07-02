@@ -1,0 +1,3 @@
+userId,userName,password,fullName,email,contactPhone,contactAddress,isAdmin,
+1,Admin,adminPass,Administrator,admin@delilah.com,123456789,Admin Street 123,1
+2,testUser,userPass,Test User,user@delilah.com,12346987,User Street 123,0
