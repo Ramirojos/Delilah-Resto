@@ -1,89 +1,50 @@
 const server = require('express');
-
 const router=server.Router();
+const db = require('../config/database');
 
-let productos=[
-    {
-        id:1,
-        nombre:'Hamburguesa',
-        precio:'125$',
-        url:''
-    },
-    {
-        id:2,
-        nombre:'Ensalada Caesar',
-        precio:'120$',
-        url:''
-    }
-]
+//imports
+const{
+    authenticateUser
+}=require('../middlewares/usersMiddlewares')
 
-let favoritos=[
-    {
-        id:1,
-        nombre:'Hamburguesa',
-        precio:'125$',
-        url:''
-    }
-];
+const{
+    getProducts,
+    getProductById,
+    addNewProduct,
+    checkProductFields,
+    validateProductName,
+    updateProduct,
+    deleteProduct
+}=require('../middlewares/productsMiddlewares');
 
- function validarProducto(req, res, next){
-    const { id, nombre, precio, url } = req.body;
-    console.log(req.body);
-    if(!id||!nombre||!precio||!url){
-        res.status(400).json('Falta informacion')
-    }else{
-        productos.forEach(producto =>{
-            if( producto.id ===id &&
-                producto.nombre === nombre &&
-                producto.precio === precio &&
-                producto.url === url 
-                ){
-                    res.status(409).json('El producto ya existe');
-                }
-        })
-        next();
-    }
-    
-};
+//------GET------- 
 
-function validarId(req, res, next){
-    productos.forEach((producto)=>{
-    let bool = false;
-    if(producto.id == req.params.id){
-        bool = true;
-    if(bool){
-        next();
-    }}else{
-        res.status(404).json('Producto no existe')
-    }    
-    })
-    
-};
-
-router.get('/',(req,res)=>{
-    res.status(200).json(productos)
-});
-
-router.get('/productById/:id',validarId , (req,res)=>{
-    const productId = req.params.id;
-    res.status(200).json(productos[productId]);
-});
-
-router.get('/favoritos', (req,res)=>{
-    res.status(200).json(favoritos)
-});
-
-router.post('/', validarProducto, (req,res)=>{
-    productos.push(req.body);
-    res.status(200).json('producto agregado');
-});
-
-router.post('/favoritos',validarProducto, (req,res)=>{
-    const productId = req.params.id;
-    favoritos.push(productos[productId]);
-    res.status(200).json('Producto agregado a Favoritos');
+//get de todos los productos
+router.get('/',getProducts, async (req,res)=>{
 })
 
+//trae producto por id
+router.get('/:product_Id',getProductById,async (req,res)=>{
+    });
 
+//------POSTS--------
+
+//crea producto nuevo y lo agrega a tabla products
+router.post('/',[authenticateUser,checkProductFields,validateProductName,addNewProduct], async (req,res)=>{
+});
+
+//-------PATCH----------
+
+//modificar nname/price/photoURL,description
+
+router.patch('/:product_Id',[authenticateUser,updateProduct], async (req,res)=>{
+    
+})
+
+//-------DELETE----------
+
+//Borra producto de la lista por id
+router.delete('/:id',[authenticateUser,deleteProduct], async(req,res)=>{
+})
 
 module.exports=router;

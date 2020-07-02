@@ -1,59 +1,54 @@
 const server = require('express');
-
 const router=server.Router();
+const db = require('../config/database');
 
-let orders=[
-    {
-        id:1,
-        estado:'nuevo',
-        hora:'12:35',
-        descripcion:'1xHamburguesa, 2xEnsalada Caesar',
-        pago:{
-            monto:500,
-            tipo:'tarjeta'
-        },
-        usuario:'jun_cito',
-        direccion:'calle falsa 123'
-    }
-];
 
-router.get('/', (req,res)=>{
-    res.status(200).json(orders);
-});
+const {authenticateUser}=require('../middlewares/usersMiddlewares');
 
-function validateOrder(req,res,next){
-    const {id, estado, hora, descripcion, pago, usuario, direccion}=req.body;
-    if(!id||!estado||!hora||!descripcion||!pago||!usuario||!direccion){
-        res.status(400).json('falta informacion');
-    }else{
-        next();
-    }
-}
+const {
+    addOrder,
+    listOrders,
+    listOrdersById,
+    deleteOrder,
+    UpdateStatus    
+} = require('../middlewares/ordersMiddlewares');
 
-router.post('/',validateOrder,(req,res)=>{
-    orders.push(req.body);
-    res.status(201).json('Orden creada');
+//------GET-----
+
+//trae todos los pedidos
+//solo podria hacerlo admin
+
+//trae toda la tabla de ordenes, y trae userId, userName y adress de la tabla uSers
+router.get('/',[authenticateUser,listOrders], (req,res)=>{
+    res.status(200).json(req.ordersList);
 })
 
-function validateOrderId(req,res,next){
-    orders.forEach((order)=>{
-        if(order.id == req.params.id){
-            next();
-        }else{
-            res.status(404).json('la orden no existe');
-        }
-    })
-}
-
-router.get('/:id',validateOrderId,(req,res)=>{
-    const orderId = req.params.id
-    res.status(200).json(orders[orderId-1]);
+//trae orden por id, solo podria el admin
+router.get('/:orderId',[authenticateUser,listOrdersById],async (req,res)=>{
+    res.status(200).json(req.ordersList)
 })
 
+//-------POST-------
 
-router.patch('/:id', (req,res)=>{
-    //todavia no se me courre com hacerlo
-    //va a ser mas facil una vez que una la BD con esto
+//permite agregar pedidos a la tabla orders
+
+router.post('/',[authenticateUser,addOrder],async (req,res)=>{
+    res.status(200).json(`Su orden fue crada con exito.`);
+})
+
+//-------PATCH---------
+
+//hacerun update del estado del pedido
+router.patch('/:order_Id',[authenticateUser,UpdateStatus], async (req,res)=>{
+    res.status(200).json(`Orden actualizada a: ${req.body.orderStatus}`)
+})
+
+//--------DELETE-------
+
+//eliminar un pedido?
+//necesario si hago el patch a estado cancelado?
+router.delete('/:orderId',[authenticateUser,deleteOrder], async(req,res)=>{
+    res.status(200).json('Orden eliminada')
 })
 
 module.exports=router;
